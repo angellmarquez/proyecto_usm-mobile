@@ -74,6 +74,21 @@ geolocateControl.on('geolocate', function (e) {
 
   // Agregar un marcador azul para el usuario principal
   currentMarker = addCustomMarker(longitude, latitude, 'blue');
+
+  // Mostrar la ubicación y el ID del usuario en el panel de información
+  document.getElementById('location-info').innerHTML =
+    `<strong>Tu ID:</strong> ${userId}<br>` +
+    `<strong>Latitud:</strong> ${latitude.toFixed(6)}<br>` +
+    `<strong>Longitud:</strong> ${longitude.toFixed(6)}`;
+
+  // Obtener la dirección del usuario principal
+  fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`)
+    .then(response => response.json())
+    .then(data => {
+      const address = data.features[0]?.place_name || 'Dirección no disponible';
+      document.getElementById('location-info').innerHTML += `<strong>Dirección:</strong> ${address}`;
+    })
+    .catch(err => console.error('Error al obtener la dirección:', err));
 });
 
 // Función para iniciar el seguimiento en tiempo real del otro usuario
@@ -115,16 +130,18 @@ function startRealTimeTracking() {
         // Agregar un marcador naranja para el otro usuario
         currentMarker = addCustomMarker(longitude, latitude, 'orange');
 
+        // Mostrar la ubicación del usuario buscado en el panel de información
+        document.getElementById('search-result').innerHTML =
+          `<strong>Ubicación del usuario ${searchUserId}:</strong><br>` +
+          `<strong>Latitud:</strong> ${latitude.toFixed(6)}<br>` +
+          `<strong>Longitud:</strong> ${longitude.toFixed(6)}`;
+
         // Obtener la dirección del usuario buscado
         fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${mapboxgl.accessToken}`)
           .then(response => response.json())
           .then(data => {
             const address = data.features[0]?.place_name || 'Dirección no disponible';
-            document.getElementById('search-result').innerHTML =
-              `<strong>Ubicación del usuario ${searchUserId}:</strong><br>` +
-              `<strong>Dirección:</strong> ${address}<br>` +
-              `Latitud: ${latitude.toFixed(6)}<br>` +
-              `Longitud: ${longitude.toFixed(6)}`;
+            document.getElementById('search-result').innerHTML += `<br><strong>Dirección:</strong> ${address}`;
           })
           .catch(err => console.error('Error al obtener la dirección:', err));
       })
